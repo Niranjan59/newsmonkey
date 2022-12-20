@@ -1,86 +1,126 @@
 import React, { Component } from "react";
 import NewsItem from "./NewsItem";
+import Spinner from "./Spinner";
+import PropTypes from 'prop-types';
 
 export class News extends Component {
-  articles = [
-    {
-      source: {
-        id: "nfl-news",
-        name: "NFL News",
-      },
-      author: "Dan Hanzus",
-      title:
-        "NFL Power Rankings, Week 14: NFC East owns top two spots; 49ers fall after Jimmy Garoppolo injury - NFL.com",
-      description:
-        "With five weeks remaining in the regular season, one division owns the top two spots in Dan Hanzus' NFL Power Rankings. How far do the 49ers fall in the wake of Jimmy Garoppolo's season-ending injury? Check out the full pecking order, 1-32.",
-      url: "https://www.nfl.com/news/nfl-power-rankings-week-14-2022-nfl-season",
-      urlToImage:
-        "https://static.www.nfl.com/image/private/t_editorial_landscape_12_desktop/league/eqat8jb1jhy5j2jpufx0",
-      publishedAt: "2022-12-06T13:29:00Z",
-      content:
-        "The beasts of the NFC East rule the NFL Power Rankings.\r\nWith five weeks remaining in the regular season, the top two spots on our big board go to the Eagles and Cowboys, two longtime rivals who each… [+684 chars]",
-    },
-    {
-      source: {
-        id: "reuters",
-        name: "Reuters",
-      },
-      author: null,
-      title:
-        "Rising flu cases drive up U.S. hospitalizations, CDC says - Reuters.com",
-      description:
-        "The United States is experiencing the highest levels of hospitalizations from influenza that it has seen in a decade for this time of year, the head of the U.S. Centers for Disease Control and Prevention (CDC) said on Monday, adding that 14 children have died…",
-      url: "https://www.reuters.com/world/us/us-seeing-most-flu-hospitalizations-cases-decade-cdc-says-2022-12-05/",
-      urlToImage:
-        "https://www.reuters.com/resizer/eOLfnhsDRxC92yrTa-d3lEIG0oM=/1200x628/smart/filters:quality(80)/cloudfront-us-east-2.images.arcpublishing.com/reuters/MJX5H3XFYVKCHBNCK674UUAVMI.jpg",
-      publishedAt: "2022-12-06T13:18:00Z",
-      content:
-        "WASHINGTON, Dec 5 (Reuters) - The United States is experiencing the highest levels of hospitalizations from influenza that it has seen in a decade for this time of year, the head of the U.S. Centers … [+2451 chars]",
-    },
-    {
-      source: {
-        id: null,
-        name: "The Guardian",
-      },
-      author: "Guardian staff reporter",
-      title:
-        "Tom Brady breaks NFL record during 13-point comeback as Bucs beat Saints - The Guardian",
-      description:
-        "Tom Brady’s touchdown passes in the final three minutes on Monday night helped the Buccaneers rally from a 13-point deficit against the Saints",
-      url: "https://www.theguardian.com/sport/2022/dec/06/tom-brady-breaks-nfl-record-during-13-point-comeback-as-bucs-beat-saints",
-      urlToImage:
-        "https://i.guim.co.uk/img/media/11398e70f595a095a39409c2183cfe622e44e537/0_450_6756_4054/master/6756.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=90c13466d612457fe3e9feb038962616",
-      publishedAt: "2022-12-06T12:32:00Z",
-      content:
-        "A relieved Tom Brady stepped to the podium with a big smile.\r\nJust like we drew it up, the seven-time Super Bowl quarterback said after throwing a pair of touchdown passes in the final three minutes … [+3136 chars]",
-    },
-  ];
+  static defaultProps = {
+    country: 'us',
+    pageSize: 9,
+    category: 'general'
+  }
+
+  static propTypes = {
+    name: PropTypes.string,
+    pageSize: PropTypes.number,
+    category: PropTypes.string
+
+  }
   constructor() {
     super();
     this.state = {
-      articles: this.articles,
+      articles: [],
       loading: false,
+      page: 1,
     };
   }
+
+  async componentDidMount() {
+    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=54c2b25fac28463dac642531bdeac7a1&page=1&pageSize=${this.props.pageSize}`;
+    this.setState({ loading: true });
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    console.log(data);
+    this.setState({
+      articles: parsedData.articles,
+      totalResults: parsedData.totalResults,
+      loading: false,
+    });
+  }
+
+  handlePrevClick = async () => {
+    console.log("Previous");
+    let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=54c2b25fac28463dac642531bdeac7a1&page=${
+      this.state.page - 1
+    }&pageSize=${this.props.pageSize}`;
+    this.setState({ loading: true });
+
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    console.log(data);
+    this.setState({
+      page: this.state.page - 1,
+      articles: parsedData.articles,
+      loading: false,
+    });
+  };
+  handleNextClick = async () => {
+    console.log("Next");
+    if (
+      this.state.page + 1 >
+      Math.ceil(this.state.totalResults / this.props.pageSize)
+    ) {
+    } else {
+      let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=54c2b25fac28463dac642531bdeac7a1&page=${
+        this.state.page + 1
+      }&pageSize=${this.props.pageSize}`;
+      this.setState({ loading: true });
+      let data = await fetch(url);
+      let parsedData = await data.json();
+      console.log(data);
+      this.setState({
+        page: this.state.page + 1,
+        articles: parsedData.articles,
+        loading: false,
+      });
+    }
+  };
   render() {
     return (
       <div>
         <div className="container">
-          <h2>NewsMonkey - Top Headlines</h2>
+          <h2 className="m-4 text-center" style={{ margin:'35px 0px'}}>NewsMonkey - Top Headlines</h2>
+          {this.state.loading && <Spinner />}
 
           <div className="row">
-            {this.state.articles.map((element) => {
-              return (
-                <div className="col-md-4" key={element.url}>
-                  <NewsItem
-                    title={element.title}
-                    description={element.description}
-                    imageUrl={element.urlToImage}
-                    newsUrl={element.url}
-                  />
-                </div>
-              );
-            })}
+            {!this.state.loading &&
+              this.state.articles.map((element) => {
+                return (
+                  <div className="col-md-4" key={element.url}>
+                    <NewsItem
+                      title={element.title ? element.title.slice(0, 45) : ""}
+                      description={
+                        element.description
+                          ? element.description.slice(0, 88)
+                          : ""
+                      }
+                      imageUrl={element.urlToImage}
+                      newsUrl={element.url}
+                    />
+                  </div>
+                );
+              })}
+          </div>
+          <div className="container d-flex justify-content-between">
+            <button
+              disabled={this.state.page <= 1}
+              type="button"
+              className="btn btn-outline-dark"
+              onClick={this.handlePrevClick}
+            >
+              &larr; Previous
+            </button>
+            <button
+              disabled={
+                this.state.page + 1 >
+                Math.ceil(this.state.totalResults / this.props.pageSize)
+              }
+              type="button"
+              className="btn btn-outline-dark"
+              onClick={this.handleNextClick}
+            >
+              Next &rarr;
+            </button>
           </div>
         </div>
       </div>
