@@ -3,7 +3,7 @@ import "./App.css";
 import React, { Component } from "react";
 import Navbar from "./components/Navbar";
 import News from "./components/News";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 export default class App extends Component {
   render() {
@@ -11,7 +11,6 @@ export default class App extends Component {
       <div>
         <Router>
           <Navbar />
-          <Switch>
             <Route exact path="/business">
               <News
                 key="business"
@@ -58,7 +57,6 @@ export default class App extends Component {
                 category="technology"
               />
             </Route>
-          </Switch>
         </Router>
       </div>
     );
