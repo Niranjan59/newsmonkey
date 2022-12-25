@@ -6,6 +6,7 @@ export class Spinner extends Component {
     return (
       <div className="text-center">
         <img
+          className="my-3 "
           style={{ width: "50px", height: "50px" }}
           src={loading}
           alt="loading"
